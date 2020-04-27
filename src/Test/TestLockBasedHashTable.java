@@ -11,6 +11,7 @@ import java.util.*;
 public class TestLockBasedHashTable {
 
     private static final int TEST_SIZE = 10000;
+    private static final int NUM_BUCKET = 10000;
 
     private ConcurrentHashTable<Integer, Integer> concurrentHashTable;
     private Integer[] testSet1 = new Integer[TEST_SIZE];
@@ -37,7 +38,7 @@ public class TestLockBasedHashTable {
 
     @Test
     public void testLockBasedHashTableCanPut() {
-        concurrentHashTable = new LockBasedHashTable<>();
+        concurrentHashTable = new LockBasedHashTable<>(NUM_BUCKET);
         makePutThread(concurrentHashTable);
         Assert.assertEquals(3 * TEST_SIZE, concurrentHashTable.size());
 
@@ -58,7 +59,7 @@ public class TestLockBasedHashTable {
 
     @Test
     public void testLockBasedHashTableCanRemove() {
-        concurrentHashTable = new LockBasedHashTable<>();
+        concurrentHashTable = new LockBasedHashTable<>(NUM_BUCKET);
         makeRemoveThread(concurrentHashTable);
         Assert.assertEquals(TEST_SIZE, concurrentHashTable.size());
 

@@ -56,12 +56,13 @@ public class LockBasedHashTable<K, V> implements ConcurrentHashTable<K, V> {
     private static final double loadFactor = 0.75;
     private int numBuckets;
 
-    public LockBasedHashTable() {
-        this.table = newTable(INITIAL_CAPACITY, loadFactor);
+    public LockBasedHashTable(int numBuckets) {
+        this.numBuckets = numBuckets;
+        this.table = newTable(this.numBuckets, loadFactor);
         for (int i = 0; i < segments.length; i++) {
             segments[i] = new Segment();
         }
-        numBuckets = INITIAL_CAPACITY;
+        //numBuckets = INITIAL_CAPACITY;
     }
 
     protected Entry<K, V>[] newTable(int capacity, double loadFactor) {
