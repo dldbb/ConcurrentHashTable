@@ -16,10 +16,10 @@ public class RemoveThread<K, V> implements Runnable {
 
     @Override
     public void run() {
-        /**
+
         for (int i = 0; i < keySet.length; i++) {
             map.put(keySet[i], valueSet[i]);
-        }*/
+        }
 
         for (int i = 0; i < keySet.length; i++) {
             map.remove(keySet[i]);

@@ -8,6 +8,14 @@ public class LockBasedHashTable<K, V> implements ConcurrentHashTable<K, V> {
     protected static final class Segment {
         protected int count = 0;
 
+        protected synchronized void increase() {
+            count += 1;
+        }
+
+        protected synchronized void decrease() {
+            count -= 1;
+        }
+
         protected synchronized int getCount() {
             return this.count;
         }
@@ -71,7 +79,7 @@ public class LockBasedHashTable<K, V> implements ConcurrentHashTable<K, V> {
 
     @Override
     public int hash(K key) {
-        return Math.abs(key.hashCode() % this.numBuckets);
+        return Math.abs(key.hashCode() % this.table.length);
     }
 
     @Override
@@ -79,7 +87,8 @@ public class LockBasedHashTable<K, V> implements ConcurrentHashTable<K, V> {
         int hashVal = hash(key);
         Segment seg = segments[(hashVal & 0x1F)];
         synchronized (seg) {
-            int index = hashVal & table.length - 1;
+            //int index = hashVal & table.length - 1;
+            int index = hashVal % table.length;
             Entry<K, V> first = table[index];
             for (Entry<K, V> e = first; e != null; e = e.next) {
                 if ((e.hash == hashVal) && (key.equals(e.key))) {
@@ -90,7 +99,7 @@ public class LockBasedHashTable<K, V> implements ConcurrentHashTable<K, V> {
             }
             Entry<K, V> newEntry = new Entry(hashVal, key, value, first);
             table[index] = newEntry;
-            seg.count += 1;
+            seg.increase();
             return null;
         }
     }
@@ -98,7 +107,8 @@ public class LockBasedHashTable<K, V> implements ConcurrentHashTable<K, V> {
     @Override
     public V get(final K key){
         int hashVal = hash(key);
-        int index = hashVal & table.length - 1;
+        //int index = hashVal & table.length - 1;
+        int index = hashVal % table.length;
         Entry<K, V> first = table[index];
         for (Entry<K, V> e = first; e != null; e = e.next) {
             if ((e.hash == hashVal) && (key.equals(e.key))) {
@@ -117,7 +127,8 @@ public class LockBasedHashTable<K, V> implements ConcurrentHashTable<K, V> {
         int hashVal = hash(key);
         Segment seg = segments[(hashVal & 0x1F)];
         synchronized (seg) {
-            int index = hashVal & table.length - 1;
+            //int index = hashVal & table.length - 1;
+            int index = hashVal % table.length;
             Entry<K, V> first = table[index];
             Entry<K, V> e = first;
             while (true) {
@@ -135,7 +146,8 @@ public class LockBasedHashTable<K, V> implements ConcurrentHashTable<K, V> {
                 head = new Entry<K, V>(p.hash, p.key, p.value, head);
             }
             table[index] = head;
-            seg.count -= 1;
+            //seg.count -= 1;
+            seg.decrease();
             return oldValue;
         }
     }
@@ -145,7 +157,8 @@ public class LockBasedHashTable<K, V> implements ConcurrentHashTable<K, V> {
         int hashVal = hash(key);
         Segment seg = segments[(hashVal & 0x1F)];
         synchronized (seg) {
-            int index = hashVal & table.length - 1;
+            //int index = hashVal & table.length - 1;
+            int index = hashVal % table.length;
             Entry<K, V> first = table[index];
             Entry<K, V> e = first;
             while (true) {
@@ -168,7 +181,8 @@ public class LockBasedHashTable<K, V> implements ConcurrentHashTable<K, V> {
                 head = new Entry<K, V>(p.hash, p.key, p.value, head);
             }
             table[index] = head;
-            seg.count -= 1;
+            //seg.count -= 1;
+            seg.decrease();
             return true;
         }
     }
@@ -177,7 +191,7 @@ public class LockBasedHashTable<K, V> implements ConcurrentHashTable<K, V> {
     public int size(){
         int c = 0;
         for (int i = 0; i < segments.length; i++) {
-            c += segments[i].count;
+            c += segments[i].getCount();
         }
         return c;
     }
